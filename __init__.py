@@ -17,6 +17,10 @@ password = str(os.environ.get('COCON_PASS'))
 host = str(os.environ.get('SSW_IP'))
 port = int(os.environ.get('COCON_PORT'))
 
+coreNode='core1@ecss1'
+sipNode='sip1@ecss1'
+dsNode='ds1@ecss1'
+
 print(host+':'+format(port))
 
 client = paramiko.SSHClient()

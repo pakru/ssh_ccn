@@ -78,3 +78,23 @@ def checkDomainInit(dom):
 	else:
 		return False	
 
+def sipTransportSetup(dom,sipIP,sipPort,sipNode=sipNode):
+	print('Setting up SIP`s transport')
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/network/set listen_ports list ['+ sipPort +']')
+	print(returnedFromSSH)
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/network/set node_ip ip-set = ipset node = '+ sipNode +' ip = ' + sipIP)
+	print(returnedFromSSH)
+	if 'successfully changed' in returnedFromSSH:
+		return True
+	else: 
+		return False
+
+def trunkDeclare(dom,trunkName,trunkGroup,routingCTX,sipPort,destSipIP,destSipPort):
+	print('Declaring SIP trunk...')
+	returnedFromSSH = executeOnSSH('domain/'+ dom +'/trunk/sip/declare '+ routingCTX +' '+ trunkGroup +' '+ trunkName +' ipset '+ destSipIP +' '+ destSipPort +' sip-proxy '+ sipPort)
+	print(returnedFromSSH)
+	if 'declared' in returnedFromSSH:
+		return True
+	else:
+		return False
+
