@@ -4,13 +4,15 @@ import time
 import sys
 import colorama
 from colorama import Fore, Back, Style
-from ssh_cocon import login, password, host, port, client
+from ssh_cocon import login, password, host, port, client, sipNode
 
 global login
 global password
 global host
 global port
 global client
+global sipNode
+
 
 
 def executeOnSSH(commandStr):
@@ -89,12 +91,113 @@ def sipTransportSetup(dom,sipIP,sipPort,sipNode=sipNode):
 	else: 
 		return False
 
-def trunkDeclare(dom,trunkName,trunkGroup,routingCTX,sipPort,destSipIP,destSipPort):
+def trunkDeclare(dom,trunkName,trunkGroup,routingCTX,sipIPset,sipPort,destSipIP,destSipPort):
 	print('Declaring SIP trunk...')
-	returnedFromSSH = executeOnSSH('domain/'+ dom +'/trunk/sip/declare '+ routingCTX +' '+ trunkGroup +' '+ trunkName +' ipset '+ destSipIP +' '+ destSipPort +' sip-proxy '+ sipPort)
+	returnedFromSSH = executeOnSSH('domain/'+ dom +'/trunk/sip/declare '+ routingCTX +' '+ trunkGroup +' '+ trunkName +' '+ sipIPset +' '+ destSipIP +' '+ destSipPort +' sip-proxy '+ sipPort)
 	print(returnedFromSSH)
 	if 'declared' in returnedFromSSH:
 		return True
 	else:
 		return False
+
+def setTraceMode(dom,traceMode):
+	print('Setting trace mode to ' + traceMode  + ' for domain '+ dom)
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/trace/properties/set mode ' + traceMode)
+	print(returnedFromSSH)
+	if 'successfully changed' in returnedFromSSH:
+		return True
+	else: 
+		return False
+
+def setLogging(node,logRule,action):
+	print('Set logging of '+ node +' ' + logRule + ' to ' + action )
+	print('This action can take a few minutes. Be patient!')
+	returnedFromSSH = executeOnSSH('node/'+ node +'/log/config rule '+logRule+' '+action)
+	print(returnedFromSSH)
+	if 'Successful' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+def setSysIfaceRoutung(dom,sysIface,routingCTX):
+	print('Setting routing ctx to iface system:teleconference...')
+	returnedFromSSH = executeOnSSH('domain/'+ dom +'/system-iface/set '+ sysIface +' routing.context '+ routingCTX)
+	print(returnedFromSSH)
+	if 'successfully changed' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+def subscribersCreate(dom,sipNumber,sipPass,sipGroup,routingCTX):
+	print('Declaring Subscriber(s):... '+ sipNumber + ' ...')
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/user/declare '+ routingCTX +' '+ sipGroup +' '+ sipNumber+'@'+ dom +' none no_qop_authentication login-as-number '+ sipPass)
+	print(returnedFromSSH)
+	if subscriberSipInfo(dom,sipNumber,sipGroup,complete=False):
+		return True
+	else:
+		return False
+
+def subscriberSipInfo(dom,sipNumber,sipGroup,complete=False):
+	if complete:
+		returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/user/info '+ sipGroup +' '+ sipNumber + '@'+ dom + ' --complete')
+	else:
+		returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/user/info '+ sipGroup +' '+ sipNumber + '@'+ dom)
+	print(returnedFromSSH)
+	if 'internal iface name' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+
+def ssEnable(dom,subscrNum,ssNames):
+	print('Enabling services: '+ ssNames + ' for ' + subscrNum)
+	returnedFromSSH = executeOnSSH('domain/'+ dom +'/ss/enable '+ subscrNum +' ' + ssNames)
+	print(returnedFromSSH)
+	if 'Success:' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+def ssActivation(dom,subscrNum,ssName,ssOptions=''):
+	if ssOptions is '':
+		print('Activating service: '+ ssName + ' for ' + subscrNum)
+	else:
+		print('Activating service: '+ ssName + ' for ' + subscrNum + ' with options: '+ ssOptions)
+
+	returnedFromSSH = executeOnSSH('domain/'+ dom +'/ss/activate '+ subscrNum +' '+ ssName +' '+ ssOptions)
+	print(returnedFromSSH)
+	if 'Success:' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+def ssAddAccess(dom,ssName,dsNode='ds1'):
+	print('Adding access to supplementary services for domain :'+ dom)
+	returnedFromSSH = executeOnSSH('cluster/storage/'+dsNode+'/ss/access-list add ' + dom + ' ' + ssName)
+	print(returnedFromSSH)
+	if 'successfully' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+def ssAddAccessAll(dom,dsNode='ds1'):
+	return ssAddAccess(dom=dom,ssName='*',dsNode=dsNode)
+
+def tcRestHostSet(restHost,restPort):
+	print('Setting restHost and restPort...')
+	returnedFromSSH = executeOnSSH('system/tc/properties/set * rest_host ' + restHost)
+	#print(returnedFromSSH)
+	if not 'successfully changed' in returnedFromSSH:
+		print(returnedFromSSH)
+		return False
+	returnedFromSSH = executeOnSSH('system/tc/properties/set * rest_port ' + restPort)
+	if not 'successfully changed' in returnedFromSSH:
+		print(returnedFromSSH)
+		return False
+	return True
+
+
+
+
+
 
