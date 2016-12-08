@@ -57,8 +57,7 @@ def checkDomainExist(dom):
 
 
 def domainDeclare(dom):
-	if checkDomainExist(dom):
-		print('Domain exists... needs to remove')
+	if checkDomainExist(dom):		
 		domainRemove(dom)
 	else:
 		print('Creating domain "'+ dom +'"')
