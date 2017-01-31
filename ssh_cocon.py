@@ -48,17 +48,22 @@ def checkDomainExist(dom):
 	returnedFromSSH = executeOnSSH('domain/list')
 	print(returnedFromSSH)
 	if dom in returnedFromSSH: # проверка наличия текста в выводе
-		print('Domain exists... needs to remove')
+		print('Domain exists!')
 		return True
 	else:
-		print('Domain "'+ dom +'" is not exists...')
+		print('Domain "'+ dom +'" is not exists!')
 		return False
 	return False
 
 
-def domainDeclare(dom):
-	if checkDomainExist(dom):		
-		domainRemove(dom)
+def domainDeclare(dom, removeIfExists = False):
+	if checkDomainExist(dom):
+		if removeIfExists:
+			print('Removing domain due to its existance!')
+			domainRemove(dom)
+		else:
+			print('Domain already exists')
+			return True
 	else:
 		print('Creating domain "'+ dom +'"')
 
