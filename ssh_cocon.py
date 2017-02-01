@@ -4,28 +4,50 @@ import time
 import sys
 import colorama
 from colorama import Fore, Back, Style
-from ssh_cocon import login, password, host, port, client, sipNode
+from ssh_cocon import coconInt
+import config
+import modules.cocon_interface as ccn_iface
+import threading
 
+'''
 global login
 global password
 global host
 global port
 global client
 global sipNode
+global coconInt
+'''
 
 
 
 def executeOnSSH(commandStr):
+	'''
 	paramiko.util.log_to_file('/tmp/ssh_paramiko.ssh')
 	client.connect(hostname=host, username=login, password=password, port=port, look_for_keys=False, allow_agent=False)	
 	stdin, stdout, stderr = client.exec_command(commandStr)
 	data = stdout.read() + stderr.read()
 	client.close()
 	time.sleep(0.5)
-	return data.decode("utf-8")
+		'''
+	#test = '/node/uptime\nsystem-status\n'
+
+	# ccn_iface.cocon_push_string_command(coconCommands,coconInt)
+
+	#print('sending string')
+	ccn_iface.cocon_push_string_command(coconCommands=commandStr+'\n', coconInt = coconInt)
+
+	#print('recieved: ')
+	#print(coconInt.data.decode('utf-8'))
+	#print('--------------Enter found at: ' + str(coconInt.last_data.decode('utf-8').find('\n')))
+
+	return coconInt.data.decode('utf-8')
 
 def domainRemove(dom):
-	client.connect(hostname=host, username=login, password=password, port=port, look_for_keys=False, allow_agent=False)
+	client = paramiko.SSHClient()
+	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+	client.connect(hostname=config.host, username=config.login, password=config.password, port=config.port, look_for_keys=False, allow_agent=False)
 	chan = client.invoke_shell()
 	chan.send('domain/remove ' +dom+ '\n')
 	buff = ''
@@ -48,17 +70,22 @@ def checkDomainExist(dom):
 	returnedFromSSH = executeOnSSH('domain/list')
 	print(returnedFromSSH)
 	if dom in returnedFromSSH: # проверка наличия текста в выводе
-		print('Domain exists... needs to remove')
+		print('Domain exists!')
 		return True
 	else:
-		print('Domain "'+ dom +'" is not exists...')
+		print('Domain "'+ dom +'" is not exists!')
 		return False
 	return False
 
 
-def domainDeclare(dom):
-	if checkDomainExist(dom):		
-		domainRemove(dom)
+def domainDeclare(dom, removeIfExists = False):
+	if checkDomainExist(dom):
+		if removeIfExists:
+			print('Removing domain due to its existance!')
+			domainRemove(dom)
+		else:
+			print('Domain already exists')
+			return True
 	else:
 		print('Creating domain "'+ dom +'"')
 
@@ -79,7 +106,7 @@ def checkDomainInit(dom):
 	else:
 		return False	
 
-def sipTransportSetup(dom,sipIP,sipPort,sipNode=sipNode):
+def sipTransportSetup(dom,sipIP,sipPort,sipNode=config.sipNode):
 	print('Setting up SIP`s transport')
 	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/network/set listen_ports list ['+ sipPort +']')
 	print(returnedFromSSH)
