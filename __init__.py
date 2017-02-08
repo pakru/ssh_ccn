@@ -16,12 +16,12 @@ def clientClose():
 	print('Closing')
 	coconInt.eventForStop.set()
 
-
+'''
 config.login = config.testConfigJson['Cocon'][0]['Login']
 config.password = config.testConfigJson['Cocon'][0]['Password']
 config.host = config.testConfigJson['Cocon'][0]['Host']
 config.port = int(config.testConfigJson['Cocon'][0]['Port'])
-
+'''
 
 #login = str(os.environ.get('COCON_USER'))
 #login = 'admin'

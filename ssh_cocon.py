@@ -37,11 +37,16 @@ def executeOnSSH(commandStr):
 	#print('sending string')
 	ccn_iface.cocon_push_string_command(coconCommands=commandStr+'\n', coconInt = coconInt)
 
+	#payloadFromCocon = coconInt.data.splitlines(True)[2:]
+	startCutPosition = coconInt.data.decode('utf-8').find('\n')
+	endCutPosition = coconInt.data.decode('utf-8').find(':/$ exit')
+	print('endCut pos: ' + str(endCutPosition))
 	#print('recieved: ')
 	#print(coconInt.data.decode('utf-8'))
 	#print('--------------Enter found at: ' + str(coconInt.last_data.decode('utf-8').find('\n')))
 
-	return coconInt.data.decode('utf-8')
+	return coconInt.data.decode('utf-8')[startCutPosition:endCutPosition]
+	#return payloadFromCocon
 
 def domainRemove(dom):
 	client = paramiko.SSHClient()
