@@ -227,8 +227,16 @@ def tcRestHostSet(restHost,restPort):
 		return False
 	return True
 
-
-
-
-
+def setAliasSubscriberPortalLoginPass(dom, subscrNum, login, passwd):
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/alias/set-for-address ' + subscrNum +
+								   ' subscriber_portal\login ' + '"' + login + '"')
+	if not 'Affected addresses in domain' in returnedFromSSH:
+		print(returnedFromSSH)
+		return False
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/alias/set-for-address ' + subscrNum +
+								   ' subscriber_portal\password ' + '"' + passwd + '"')
+	if not 'Affected addresses in domain' in returnedFromSSH:
+		print(returnedFromSSH)
+		return False
+	return True
 

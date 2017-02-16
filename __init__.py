@@ -14,7 +14,7 @@ def clientClose():
 	#global client
 	#client.close()
 	print('Closing')
-	coconInt.eventForStop.set()
+	#coconInt.eventForStop.set()
 
 '''
 config.login = config.testConfigJson['Cocon'][0]['Login']
@@ -47,7 +47,7 @@ authCoconData = {"%%DEV_USER%%":config.login, "%%DEV_PASS%%":config.password, "%
 coconInt = ccn_iface.coconInterface(authCoconData, show_cocon_output=True)
 coconInt.eventForStop = threading.Event()
 #Поднимаем thread
-coconInt.myThread = threading.Thread(target=ccn_iface.ccn_command_handler, args=(coconInt,))
+coconInt.myThread = threading.Thread(target=ccn_iface.ccn_command_handler, args=(coconInt,),daemon=True)
 coconInt.myThread.start()
 #Проверяем, что он жив.
 time.sleep(0.2)
