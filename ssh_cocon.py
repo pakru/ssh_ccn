@@ -21,7 +21,7 @@ global coconInt
 
 
 
-def executeOnSSH(commandStr):
+def executeOnSSH(commandStr, cutHead = True):
 	'''
 	paramiko.util.log_to_file('/tmp/ssh_paramiko.ssh')
 	client.connect(hostname=host, username=login, password=password, port=port, look_for_keys=False, allow_agent=False)	
@@ -38,14 +38,19 @@ def executeOnSSH(commandStr):
 	ccn_iface.cocon_push_string_command(coconCommands=commandStr+'\n', coconInt = coconInt)
 
 	#payloadFromCocon = coconInt.data.splitlines(True)[2:]
-	startCutPosition = coconInt.data.decode('utf-8').find('\n')
 	endCutPosition = coconInt.data.decode('utf-8').find(':/$ exit')
-	print('endCut pos: ' + str(endCutPosition))
+	if cutHead:
+		startCutPosition = coconInt.data.decode('utf-8').find('\n')
+		return coconInt.data.decode('utf-8')[startCutPosition:endCutPosition]
+	else:
+		return coconInt.data.decode('utf-8')[:endCutPosition]
+
+	#print('endCut pos: ' + str(endCutPosition))
 	#print('recieved: ')
 	#print(coconInt.data.decode('utf-8'))
 	#print('--------------Enter found at: ' + str(coconInt.last_data.decode('utf-8').find('\n')))
 
-	return coconInt.data.decode('utf-8')[startCutPosition:endCutPosition]
+
 	#return payloadFromCocon
 
 def domainRemove(dom):
@@ -121,6 +126,30 @@ def sipTransportSetup(dom,sipIP,sipPort,sipNode=config.sipNode):
 		return True
 	else: 
 		return False
+
+def sipTransportShareSetup(dom,sharesetName):
+	print('Set on domain SIP share set')
+	returnedFromSSH = executeOnSSH('domain/'+ dom +'/sip/network/set share_set '+sharesetName)
+	print(returnedFromSSH)
+	if 'successfully changed' in returnedFromSSH:
+		return True
+	else:
+		return False
+
+
+def sipShareSetDeclare(sipIP,sipPort,sharesetName,sipNode=config.sipNode):
+	print('Declaring SIP share set')
+	returnedFromSSH = executeOnSSH('cluster/adapter/sip1/sip/network/set share_set '+ sharesetName +
+								   ' node-ip node = '+ sipNode +' = '+ sipIP)
+	print(returnedFromSSH)
+	returnedFromSSH = executeOnSSH('cluster/adapter/sip1/sip/network/set share_set '+ sharesetName +
+								   ' listen-ports list = ['+ sipPort +']')
+	print(returnedFromSSH)
+	if 'successfully changed' in returnedFromSSH:
+		return True
+	else:
+		return False
+
 
 def trunkDeclare(dom,trunkName,trunkGroup,routingCTX,sipIPset,sipPort,destSipIP,destSipPort):
 	print('Declaring SIP trunk...')
@@ -227,16 +256,30 @@ def tcRestHostSet(restHost,restPort):
 		return False
 	return True
 
-def setAliasSubscriberPortalLoginPass(dom, subscrNum, login, passwd):
-	returnedFromSSH = executeOnSSH('domain/' + dom + '/alias/set-for-address ' + subscrNum +
-								   ' subscriber_portal\login ' + '"' + login + '"')
-	if not 'Affected addresses in domain' in returnedFromSSH:
+def subscriberPortalCheckConnection(dom):
+	print('Check subscriber portal MySQL connection...')
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/subscriber-portal/check-connection')
+	print(returnedFromSSH)
+	if 'Connection successful' in returnedFromSSH:
 		print(returnedFromSSH)
+		return True
+	else:
 		return False
-	returnedFromSSH = executeOnSSH('domain/' + dom + '/alias/set-for-address ' + subscrNum +
+
+def setAliasSubscriberPortalLoginPass(dom, subscrNum, sipGroup, login, passwd):
+	print('Set subscriber portal login/pass...')
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/alias/set ' + subscrNum + ' ' + sipGroup + ' ' + subscrNum + '@' + dom +
+								   ' subscriber_portal\login ' + '"' + login + '"')
+	print(returnedFromSSH)
+	#if not 'affected by settings property' in returnedFromSSH:
+		#print(returnedFromSSH)
+		#return False
+	#time.sleep(0.5)
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/alias/set ' + subscrNum + ' ' + sipGroup + ' ' + subscrNum + '@' + dom +
 								   ' subscriber_portal\password ' + '"' + passwd + '"')
-	if not 'Affected addresses in domain' in returnedFromSSH:
-		print(returnedFromSSH)
+	print(returnedFromSSH)
+	if not 'affected by settings property' in returnedFromSSH:
+		#print(returnedFromSSH)
 		return False
 	return True
 
