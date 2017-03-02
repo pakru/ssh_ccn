@@ -256,6 +256,16 @@ def tcRestHostSet(restHost,restPort):
 		return False
 	return True
 
+def subscriberPortalSetConnection(dom, host='localhost', login='subscribers', passwd='subscribers', dbName='ecss_subscribers'):
+	print('Set SubscriberPortal connection properties')
+	returnedFromSSH = executeOnSSH('domain/' + dom +'/subscriber-portal/properties/set connection ' + host + ' ' + login
+								   + ' ' + passwd + ' ' + dbName)
+	print(returnedFromSSH)
+	if not 'successfully changed' in returnedFromSSH:
+		#print(returnedFromSSH)
+		return False
+	return True
+
 def subscriberPortalCheckConnection(dom):
 	print('Check subscriber portal MySQL connection...')
 	returnedFromSSH = executeOnSSH('domain/' + dom + '/subscriber-portal/check-connection')
