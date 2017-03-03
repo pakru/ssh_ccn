@@ -1,14 +1,8 @@
-import config
+import config, time, sys, os, colorama, atexit, threading, logging
 #import paramiko
-import time
-import sys
-import os
-import colorama
-from colorama import Fore, Back, Style
-import atexit
+#from colorama import Fore, Back, Style
 import modules.cocon_interface as ccn_iface
-import threading
-import json
+#import json
 
 def clientClose():
 	#global client
@@ -41,18 +35,22 @@ client = None
 
 print(config.host+':'+format(config.port))
 
-
-
 authCoconData = {"%%DEV_USER%%":config.login, "%%DEV_PASS%%":config.password, "%%SERV_IP%%":config.host}
-coconInt = ccn_iface.coconInterface(authCoconData, show_cocon_output=True)
+logging.info('Cocon login: ' + config.login +  ' password: ' + config.password + ' host: ' +config.host)
+if config.global_ccn_lock:
+	coconInt = ccn_iface.coconInterface(authCoconData, show_cocon_output=True,global_ccn_lock=config.global_ccn_lock)
+else:
+	coconInt = ccn_iface.coconInterface(authCoconData, show_cocon_output=True)
 coconInt.eventForStop = threading.Event()
 #Поднимаем thread
 coconInt.myThread = threading.Thread(target=ccn_iface.ccn_command_handler, args=(coconInt,),daemon=True)
+logging.info('Starting cocon interface thread')
 coconInt.myThread.start()
 #Проверяем, что он жив.
 time.sleep(0.2)
 if not coconInt.myThread.is_alive():
 	print('Can\'t start CCN configure thread')
+	logging.error('Can\'t start CCN configure thread')
 	sys.exit(1)
 
 
