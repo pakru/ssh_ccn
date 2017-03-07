@@ -53,7 +53,6 @@ def executeOnSSH(commandStr, cutHead = True):
 	#return payloadFromCocon
 
 def domainRemove(dom):
-	time.sleep(2)
 	logging.info('Removing domain: ' + dom)
 
 	client = paramiko.SSHClient()
@@ -76,6 +75,7 @@ def domainRemove(dom):
 	print('Removing domain...')
 	print(buff)
 	client.close()
+	time.sleep(2)
 	return True
 
 def checkDomainExist(dom):
