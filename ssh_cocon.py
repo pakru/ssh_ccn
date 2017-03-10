@@ -75,7 +75,7 @@ def domainRemove(dom):
 	print('Removing domain...')
 	print(buff)
 	client.close()
-	time.sleep(2)
+	#time.sleep(2)
 	return True
 
 def checkDomainExist(dom):
