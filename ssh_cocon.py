@@ -139,10 +139,10 @@ def sipTransportSetup(dom,sipIP,sipPort,sipNode=config.sipNode):
 	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/network/set node_ip ip-set = ipset node = '+ sipNode +' ip = ' + sipIP)
 	print(returnedFromSSH)
 	if 'successfully changed' in returnedFromSSH:
-		logging.info('SIP ipset of "' + dom + '" domain is successfully set')
+		logging.info('SIP ipset of "' + dom + '" domain is successfully set for node ' + sipNode)
 		return True
 	else:
-		logging.error('Failed to set SIP ipset of "' + dom + '" domain')
+		logging.error('Failed to set SIP ipset of "' + dom + '" domain for node ' + sipNode)
 		return False
 
 def sipTransportShareSetup(dom,sharesetName):
