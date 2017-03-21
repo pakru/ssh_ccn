@@ -1,25 +1,12 @@
-import logging
-import paramiko
-import time
-import sys
-import colorama
-from colorama import Fore, Back, Style
+import logging, config
+#import paramiko
+#import time
+#import sys
+#import colorama
+#from colorama import Fore, Back, Style
 from ssh_cocon import coconInt
-import config
 import modules.cocon_interface as ccn_iface
-import threading
-
-'''
-global login
-global password
-global host
-global port
-global client
-global sipNode
-global coconInt
-'''
-
-
+#import threading
 
 def executeOnSSH(commandStr, cutHead = True):
 	'''
@@ -55,6 +42,19 @@ def executeOnSSH(commandStr, cutHead = True):
 def domainRemove(dom):
 	logging.info('Removing domain: ' + dom)
 
+	returnedFromSSH = executeOnSSH('domain/remove ' +dom+ '\n' + 'yes\n')
+	print(returnedFromSSH)
+	if 'is removed' in returnedFromSSH:
+		print('Domain removed')
+		logging.info('Domain removed')
+		return True
+	else:
+		print('Failed to remove domain')
+		logging.error('Failed to remove domain')
+		return False
+
+
+	'''
 	client = paramiko.SSHClient()
 	client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -75,8 +75,10 @@ def domainRemove(dom):
 	print('Removing domain...')
 	print(buff)
 	client.close()
+	'''
+
 	#time.sleep(2)
-	return True
+	#return True
 
 def checkDomainExist(dom):
 	print('Checking if test domain exist...')
