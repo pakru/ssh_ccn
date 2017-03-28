@@ -335,6 +335,20 @@ def subscriberPortalCheckConnection(dom):
 		logging.warning('SubscriberPortal connection test failed for "' + dom + '"')
 		return False
 
+def subscriberPortalSync(dom, password, addrRange='*', ifaceRange='*'):
+	print('Subscriber portal login/pass sync')
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/subscriber-portal/sync --password '+ password +' ' +
+								   addrRange+' '+ ifaceRange)
+	print(returnedFromSSH)
+	if 'FAIL:    0' in returnedFromSSH:
+		logging.info('Subscriber portal login/pass sync successful for "' + dom + '"')
+		print(returnedFromSSH)
+		return True
+	else:
+		logging.warning('Subscriber portal login/pass sync failed for "' + dom + '"')
+		return False
+
+
 def setAliasSubscriberPortalLoginPass(dom, subscrNum, sipGroup, login, passwd):
 	print('Set subscriber portal login/pass...')
 	logging.info('Set subscriberPortal login/password of subscriber ' + subscrNum +' in domain "' + dom + '"')
