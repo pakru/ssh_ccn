@@ -122,9 +122,9 @@ def domainDeclare(dom, removeIfExists = False):
 def checkDomainInit(dom):
 	print('Checking domain creation...')
 	logging.info('Checking domain"' + dom + '" initialisation')
-	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/network/info share_set ')
+	returnedFromSSH = executeOnSSH('domain/' + dom + '/sip/network/info')
 	print(returnedFromSSH)
-	if 'share_set' in returnedFromSSH:
+	if 'ip_set' in returnedFromSSH:
 		logging.info('Domain "' + dom + '" initialised')
 		return True
 	else:
